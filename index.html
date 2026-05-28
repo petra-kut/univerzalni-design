@@ -1,0 +1,1496 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Univerzální design pro Nevypusť duši — klikací průvodce navržený podle principů, o kterých mluví.">
+<title>Univerzální design — průvodce pro Nevypusť duši</title>
+<style>
+  /* ============================================
+     Designové tokeny — fialová + meruňková
+     Kontrast testován proti WCAG 2.2 AA (4.5:1 pro text)
+     ============================================ */
+  :root {
+    --plum-900: #2b1748;       /* hlavní text na světlém */
+    --plum-700: #4a2b78;       /* sekundární text, nadpisy */
+    --plum-500: #6f3fb5;       /* akcent, odkazy */
+    --plum-300: #b39ddb;       /* dekorace */
+    --plum-100: #ede4f8;       /* světlé pozadí karty */
+    --plum-50:  #f7f2fc;       /* nejsvětlejší pozadí */
+
+    --apricot-700: #9c3c0a;    /* zvýraznění, CTA na světlém — WCAG AA */
+    --apricot-500: #f08a4b;    /* hlavní meruňková */
+    --apricot-300: #fbb98a;    /* dekorace */
+    --apricot-100: #ffe7d3;    /* pozadí highlight */
+
+    --ink: #1c0f2e;            /* maximální text na pozadí */
+    --paper: #fffaf3;          /* hlavní pozadí — teplé bílé */
+    --paper-card: #ffffff;     /* karty */
+
+    --success: #2d6b3a;
+    --warning: #8a4a00;
+    --error: #a3261d;
+
+    --radius: 14px;
+    --radius-sm: 8px;
+    --shadow: 0 4px 18px rgba(43, 23, 72, 0.08);
+    --shadow-lg: 0 12px 32px rgba(43, 23, 72, 0.12);
+
+    --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+    --font-display: "Georgia", "Times New Roman", serif;
+
+    --max-content: 760px;
+    --max-wide: 1100px;
+  }
+
+  /* ============================================
+     Reset + základ
+     ============================================ */
+  *, *::before, *::after { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+    }
+  }
+  body {
+    margin: 0;
+    font-family: var(--font-body);
+    font-size: 18px;
+    line-height: 1.65;
+    color: var(--ink);
+    background: var(--paper);
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, h4 { font-family: var(--font-display); color: var(--plum-900); margin: 0 0 0.5em; line-height: 1.25; }
+  h1 { font-size: clamp(2rem, 5vw, 3.2rem); }
+  h2 { font-size: clamp(1.6rem, 3.5vw, 2.3rem); margin-top: 0; }
+  h3 { font-size: 1.3rem; color: var(--plum-700); }
+  p { margin: 0 0 1em; }
+  a { color: var(--plum-500); text-decoration: underline; text-underline-offset: 3px; }
+  a:hover { color: var(--apricot-700); }
+  a:focus-visible, button:focus-visible, summary:focus-visible, [tabindex]:focus-visible,
+  input:focus-visible, select:focus-visible {
+    outline: 3px solid var(--apricot-700);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  /* ============================================
+     Skip link — UD princip Perceptible Information
+     ============================================ */
+  .skip-link {
+    position: absolute;
+    top: -100px;
+    left: 1rem;
+    background: var(--plum-900);
+    color: var(--paper);
+    padding: 0.75rem 1.25rem;
+    border-radius: var(--radius-sm);
+    z-index: 100;
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .skip-link:focus { top: 1rem; }
+
+  /* ============================================
+     Layout
+     ============================================ */
+  .container { width: 100%; max-width: var(--max-content); margin: 0 auto; padding: 0 1.25rem; }
+  .container-wide { max-width: var(--max-wide); margin: 0 auto; padding: 0 1.25rem; }
+
+  section { padding: 4rem 0; }
+  section + section { border-top: 1px solid var(--plum-100); }
+
+  /* ============================================
+     Sticky nav (klávesnicová navigace)
+     ============================================ */
+  .topnav {
+    position: sticky;
+    top: 0;
+    background: rgba(255, 250, 243, 0.95);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--plum-100);
+    z-index: 50;
+    padding: 0.75rem 0;
+  }
+  .topnav-inner { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+  .topnav-brand { font-weight: 700; color: var(--plum-700); margin-right: auto; font-size: 0.95rem; }
+  .topnav a {
+    color: var(--plum-700);
+    text-decoration: none;
+    padding: 0.4rem 0.8rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+  .topnav a:hover, .topnav a:focus-visible { background: var(--apricot-100); color: var(--plum-900); }
+
+  /* ============================================
+     Hero
+     ============================================ */
+  .hero {
+    background: linear-gradient(135deg, var(--plum-50) 0%, var(--apricot-100) 100%);
+    padding: 5rem 0 4rem;
+    text-align: left;
+  }
+  .hero-eyebrow {
+    display: inline-block;
+    background: var(--plum-900);
+    color: var(--paper);
+    padding: 0.35rem 0.9rem;
+    border-radius: 100px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 1.25rem;
+  }
+  .hero h1 { margin-bottom: 0.6em; }
+  .hero-lead { font-size: 1.2rem; max-width: 36rem; color: var(--plum-900); }
+  .hero-cta {
+    display: inline-block;
+    background: var(--plum-700);
+    color: var(--paper);
+    padding: 0.9rem 1.6rem;
+    border-radius: var(--radius);
+    text-decoration: none;
+    font-weight: 600;
+    margin-top: 1.5rem;
+    transition: transform 0.15s ease, background 0.15s ease;
+  }
+  .hero-cta:hover, .hero-cta:focus-visible {
+    background: var(--apricot-700);
+    color: var(--paper);
+    transform: translateY(-2px);
+  }
+  .hero-meta {
+    margin-top: 2rem;
+    font-size: 0.95rem;
+    color: var(--plum-700);
+  }
+  .hero-meta strong { color: var(--plum-900); }
+
+  /* ============================================
+     Otvírací příběh
+     ============================================ */
+  .opening-story {
+    background: var(--plum-50);
+    border-left: 6px solid var(--apricot-500);
+    padding: 2rem 1.75rem;
+    border-radius: 0 var(--radius) var(--radius) 0;
+    margin: 2rem 0;
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    line-height: 1.7;
+  }
+  .opening-story p:last-child { margin-bottom: 0; }
+
+  /* ============================================
+     Personas — 3 karty
+     ============================================ */
+  .persona-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+  }
+  .persona-card {
+    background: var(--paper-card);
+    border-radius: var(--radius);
+    padding: 1.75rem;
+    box-shadow: var(--shadow);
+    border-top: 5px solid var(--apricot-500);
+  }
+  .persona-card:nth-child(2) { border-top-color: var(--plum-500); }
+  .persona-card:nth-child(3) { border-top-color: var(--apricot-700); }
+  .persona-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--plum-100);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+    font-family: var(--font-display);
+    color: var(--plum-700);
+    font-weight: 700;
+  }
+  .persona-name { font-weight: 700; color: var(--plum-900); margin-bottom: 0.2rem; font-size: 1.15rem; }
+  .persona-tag { font-size: 0.85rem; color: var(--plum-500); margin-bottom: 1rem; }
+  .persona-quote {
+    font-style: italic;
+    color: var(--plum-700);
+    border-left: 3px solid var(--apricot-300);
+    padding-left: 0.85rem;
+    margin: 1rem 0;
+    font-size: 0.95rem;
+  }
+
+  /* ============================================
+     7 principů UD — accordion karty
+     ============================================ */
+  .principles {
+    display: grid;
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+  .principle {
+    background: var(--paper-card);
+    border: 2px solid var(--plum-100);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: border-color 0.2s ease;
+  }
+  .principle[open] { border-color: var(--plum-500); }
+  .principle summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-weight: 600;
+    color: var(--plum-900);
+  }
+  .principle summary::-webkit-details-marker { display: none; }
+  .principle summary::after {
+    content: "+";
+    margin-left: auto;
+    font-size: 1.6rem;
+    color: var(--apricot-500);
+    font-weight: 400;
+    line-height: 1;
+  }
+  .principle[open] summary::after { content: "−"; }
+  .principle summary:hover { background: var(--plum-50); }
+  .principle-number {
+    background: var(--apricot-500);
+    color: var(--ink);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-family: var(--font-display);
+    flex-shrink: 0;
+  }
+  .principle-body {
+    padding: 0 1.5rem 1.5rem 1.5rem;
+    color: var(--plum-900);
+  }
+  .principle-example {
+    background: var(--apricot-100);
+    padding: 1rem 1.25rem;
+    border-radius: var(--radius-sm);
+    margin-top: 0.75rem;
+    font-size: 0.95rem;
+  }
+  .principle-example strong { color: var(--apricot-700); }
+  .mental-tag {
+    display: inline-block;
+    background: var(--plum-700);
+    color: var(--paper);
+    font-size: 0.75rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 100px;
+    margin-left: 0.5rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+
+  /* ============================================
+     Simulátor — interakce
+     ============================================ */
+  .sim-tabs {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin: 1.5rem 0 1rem;
+  }
+  .sim-tab {
+    background: var(--paper-card);
+    border: 2px solid var(--plum-300);
+    color: var(--plum-700);
+    padding: 0.6rem 1.1rem;
+    border-radius: 100px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.95rem;
+    font-family: inherit;
+  }
+  .sim-tab[aria-selected="true"] {
+    background: var(--plum-700);
+    color: var(--paper);
+    border-color: var(--plum-700);
+  }
+  .sim-panel {
+    background: var(--paper-card);
+    border-radius: var(--radius);
+    padding: 2rem;
+    box-shadow: var(--shadow);
+    margin-bottom: 1rem;
+  }
+  .sim-panel[hidden] { display: none; }
+  .sim-explainer {
+    background: var(--plum-50);
+    border-radius: var(--radius-sm);
+    padding: 1rem 1.25rem;
+    margin-top: 1.25rem;
+    font-size: 0.95rem;
+  }
+  .sim-explainer strong { color: var(--plum-700); }
+
+  .sim-anxiety-text {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    transition: filter 0.3s, letter-spacing 0.3s;
+  }
+  .sim-anxiety-text.active {
+    filter: blur(2.5px);
+    letter-spacing: 1.5px;
+    color: #555;
+  }
+
+  .sim-dyslexia-text {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    transition: all 0.3s;
+  }
+  .sim-dyslexia-text.active {
+    font-family: "Times New Roman", serif;
+    line-height: 1.2;
+    letter-spacing: -0.5px;
+    color: #444;
+    background: rgba(180, 180, 180, 0.15);
+    padding: 0.75rem;
+  }
+
+  .sim-form-demo {
+    border: 2px solid var(--plum-100);
+    padding: 1.5rem;
+    border-radius: var(--radius-sm);
+  }
+  .sim-form-demo label { display: block; font-weight: 600; margin-bottom: 0.4rem; color: var(--plum-700); }
+  .sim-form-demo input, .sim-form-demo select {
+    width: 100%;
+    padding: 0.7rem;
+    border: 2px solid var(--plum-300);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 1rem;
+    margin-bottom: 1rem;
+  }
+  .sim-form-demo input:focus, .sim-form-demo select:focus {
+    border-color: var(--plum-500);
+    outline: none;
+  }
+  .sim-form-demo.bad label { font-size: 0.7rem; color: #888; }
+  .sim-form-demo.bad input, .sim-form-demo.bad select { padding: 0.3rem; font-size: 0.75rem; }
+  .sim-form-demo.bad { background: #f3f3f3; }
+
+  .sim-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+    margin-bottom: 1rem;
+    font-weight: 600;
+    color: var(--plum-700);
+  }
+  .sim-toggle input { width: 50px; height: 26px; cursor: pointer; }
+
+  /* ============================================
+     Před / Po — porovnání
+     ============================================ */
+  .compare-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    margin: 2rem 0;
+  }
+  @media (min-width: 720px) {
+    .compare-grid { grid-template-columns: 1fr 1fr; }
+  }
+  .compare-card {
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+  }
+  .compare-before { background: #faf6f0; border-top: 5px solid #b06060; }
+  .compare-after { background: var(--plum-50); border-top: 5px solid var(--success); }
+  .compare-label {
+    display: inline-block;
+    background: var(--ink);
+    color: var(--paper);
+    padding: 0.25rem 0.8rem;
+    border-radius: 100px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+  }
+  .compare-after .compare-label { background: var(--success); }
+  .compare-example {
+    background: var(--paper-card);
+    padding: 1rem;
+    border-radius: var(--radius-sm);
+    margin: 0.75rem 0;
+    font-size: 0.95rem;
+  }
+  .compare-tabs {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+  }
+  .compare-tab {
+    background: var(--paper-card);
+    border: 2px solid var(--apricot-300);
+    color: var(--plum-700);
+    padding: 0.5rem 1rem;
+    border-radius: 100px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    font-family: inherit;
+  }
+  .compare-tab[aria-selected="true"] {
+    background: var(--apricot-500);
+    color: var(--ink);
+    border-color: var(--apricot-500);
+  }
+
+  /* ============================================
+     Mini-kvíz
+     ============================================ */
+  .quiz-card {
+    background: var(--paper-card);
+    border-radius: var(--radius);
+    padding: 2rem;
+    box-shadow: var(--shadow);
+    margin-top: 2rem;
+  }
+  .quiz-question { font-size: 1.15rem; font-weight: 600; color: var(--plum-900); margin-bottom: 1.25rem; }
+  .quiz-options { display: grid; gap: 0.75rem; }
+  .quiz-btn {
+    background: var(--paper-card);
+    border: 2px solid var(--plum-300);
+    color: var(--plum-900);
+    padding: 0.9rem 1.2rem;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    text-align: left;
+    font-family: inherit;
+    font-size: 1rem;
+    transition: all 0.15s ease;
+  }
+  .quiz-btn:hover { border-color: var(--plum-500); background: var(--plum-50); }
+  .quiz-btn.correct { background: #d8edd8; border-color: var(--success); color: var(--success); font-weight: 600; }
+  .quiz-btn.incorrect { background: #f5d8d4; border-color: var(--error); color: var(--error); }
+  .quiz-feedback {
+    margin-top: 1.25rem;
+    padding: 1rem 1.25rem;
+    border-radius: var(--radius-sm);
+    background: var(--apricot-100);
+    color: var(--plum-900);
+  }
+  .quiz-feedback[hidden] { display: none; }
+  .quiz-progress {
+    font-size: 0.9rem;
+    color: var(--plum-500);
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+  }
+  .quiz-result {
+    text-align: center;
+    padding: 1.5rem;
+  }
+  .quiz-result h3 { color: var(--apricot-700); }
+
+  /* ============================================
+     Akční kroky pro Nevypusť duši
+     ============================================ */
+  .action-list {
+    counter-reset: action;
+    list-style: none;
+    padding: 0;
+    margin: 2rem 0;
+  }
+  .action-list li {
+    counter-increment: action;
+    background: var(--paper-card);
+    border-radius: var(--radius);
+    padding: 1.5rem 1.5rem 1.5rem 4.5rem;
+    box-shadow: var(--shadow);
+    margin-bottom: 1rem;
+    position: relative;
+  }
+  .action-list li::before {
+    content: counter(action);
+    position: absolute;
+    left: 1rem;
+    top: 1.3rem;
+    background: var(--apricot-500);
+    color: var(--ink);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+  }
+  .action-list h3 { margin-bottom: 0.4rem; }
+  .action-list p { margin-bottom: 0; }
+
+  /* ============================================
+     Zdroje
+     ============================================ */
+  .sources {
+    background: var(--plum-50);
+    border-radius: var(--radius);
+    padding: 2rem;
+    margin-top: 2rem;
+  }
+  .sources h3 { color: var(--plum-700); margin-top: 1.5rem; }
+  .sources h3:first-of-type { margin-top: 0; }
+  .sources ul { padding-left: 1.25rem; }
+  .sources li { margin-bottom: 0.5rem; }
+
+  /* ============================================
+     Footer
+     ============================================ */
+  footer {
+    background: var(--plum-900);
+    color: var(--plum-100);
+    padding: 3rem 0;
+    margin-top: 0;
+  }
+  footer a { color: var(--apricot-300); }
+  footer a:hover { color: var(--apricot-500); }
+  footer h3 { color: var(--paper); }
+
+  /* ============================================
+     Drobnosti
+     ============================================ */
+  .highlight {
+    background: linear-gradient(180deg, transparent 60%, var(--apricot-300) 60%);
+    padding: 0 0.15em;
+  }
+  .pull-quote {
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    line-height: 1.4;
+    color: var(--plum-700);
+    border-left: 5px solid var(--apricot-500);
+    padding-left: 1.25rem;
+    margin: 2rem 0;
+  }
+  .badge {
+    display: inline-block;
+    background: var(--plum-100);
+    color: var(--plum-700);
+    padding: 0.25rem 0.7rem;
+    border-radius: 100px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-right: 0.4rem;
+  }
+
+  .note {
+    background: var(--apricot-100);
+    border-left: 4px solid var(--apricot-500);
+    padding: 1rem 1.25rem;
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    margin: 1.5rem 0;
+    font-size: 0.95rem;
+  }
+
+  @media (max-width: 600px) {
+    section { padding: 3rem 0; }
+    .hero { padding: 3rem 0; }
+    body { font-size: 17px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Skip link pro klávesnicovou navigaci -->
+<a href="#main" class="skip-link">Přeskočit na hlavní obsah</a>
+
+<!-- Top nav -->
+<nav class="topnav" aria-label="Hlavní navigace">
+  <div class="container-wide topnav-inner">
+    <span class="topnav-brand">Univerzální design 101</span>
+    <a href="#pribehy">Příběhy</a>
+    <a href="#co-to-je">Co to je</a>
+    <a href="#principy">7 principů</a>
+    <a href="#simulator">Zažij si to</a>
+    <a href="#predpo">Před / po</a>
+    <a href="#kviz">Kvíz</a>
+    <a href="#akce">Co dál</a>
+    <a href="#zdroje">Zdroje</a>
+  </div>
+</nav>
+
+<main id="main">
+
+<!-- ============================================
+     HERO
+     ============================================ -->
+<header class="hero">
+  <div class="container">
+    <span class="hero-eyebrow">Pro tým Nevypusť duši</span>
+    <h1>Univerzální design není rampa.<br>Je to způsob, jak myslet.</h1>
+    <p class="hero-lead">
+      Krátký průvodce, který ti za pár minut ukáže, proč by univerzální design měl
+      být součástí každé služby pro duševní zdraví — a co konkrétně to znamená pro nás.
+    </p>
+    <a href="#pribehy" class="hero-cta">Začít průvodce →</a>
+    <p class="hero-meta">
+      <strong>Doba čtení:</strong> 5 minut na pochopení, 25 minut na ponor.
+      <br><strong>Tento web</strong> je sám navržený podle principů, o kterých mluví.
+    </p>
+  </div>
+</header>
+
+<!-- ============================================
+     1. PŘÍBĚHY / PERSONAS
+     ============================================ -->
+<section id="pribehy" aria-labelledby="pribehy-h">
+  <div class="container">
+    <h2 id="pribehy-h">Tři příběhy, které se právě teď dějí</h2>
+    <p>
+      Než začneme s teorií, představme si tři mladé lidi, kteří by k nám
+      mohli přijít — nebo nepřijít, protože je ten první krok stojí příliš.
+    </p>
+
+    <div class="persona-grid" role="list">
+      <article class="persona-card" role="listitem">
+        <div class="persona-avatar" aria-hidden="true">A</div>
+        <div class="persona-name">Anežka, 16</div>
+        <div class="persona-tag">Úzkostná porucha · střední škola</div>
+        <p>
+          Anežka chce zavolat na linku, ale text na webu vyžaduje 8 kliků,
+          každý formulář má jiný styl a všude blikají notifikace.
+          Po třetí podstránce zavře okno.
+        </p>
+        <blockquote class="persona-quote">
+          „Když má všechno tolik kroků, mozek mi řekne — to zvládneš zítra. A zítra už nezavolám.“
+        </blockquote>
+      </article>
+
+      <article class="persona-card" role="listitem">
+        <div class="persona-avatar" aria-hidden="true">M</div>
+        <div class="persona-name">Matěj, 19</div>
+        <div class="persona-tag">ADHD · první ročník VŠ</div>
+        <p>
+          Matěj otevře leták o workshopu. Hustý text malým písmem, žádné nadpisy,
+          datum schované někde uprostřed odstavce.
+          Než najde, kde je to a kdy to je, ztratí pozornost a leták zavře.
+        </p>
+        <blockquote class="persona-quote">
+          „Já to fakt chci přečíst. Ale když nevidím strukturu, mozek to nedokáže udržet.“
+        </blockquote>
+      </article>
+
+      <article class="persona-card" role="listitem">
+        <div class="persona-avatar" aria-hidden="true">T</div>
+        <div class="persona-name">Tomáš, 14</div>
+        <div class="persona-tag">Dyslexie · druhý stupeň ZŠ</div>
+        <p>
+          Tomáš sedí na školním workshopu. Lektorka mluví rychle a má prezentaci
+          s patkovým písmem na bílém pozadí. Tomáš ztratí nit, stydí se zeptat,
+          a vůbec si nezapamatuje, kam se obrátit, když to bude potřeba.
+        </p>
+        <blockquote class="persona-quote">
+          „Já nepotřebuju jednodušší obsah. Potřebuju ho v podobě, která mi sedne.“
+        </blockquote>
+      </article>
+    </div>
+
+    <div class="opening-story">
+      <p>
+        Žádný z nich nemá „těžké postižení“. Žádný z nich není „menšina, na kterou musíme myslet zvlášť“.
+      </p>
+      <p>
+        A přesto je naše služba pro každého z nich obtížně přístupná —
+        ne pro nedostatek dobré vůle, ale pro to, <strong>jak je navržená</strong>.
+      </p>
+      <p>
+        <strong>Univerzální design</strong> je odpověď na otázku:
+        <em>Co kdybychom navrhli službu tak, aby fungovala pro Anežku, Matěje i Tomáše už od začátku — bez nutnosti speciálních úprav?</em>
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================
+     2. CO JE UNIVERZÁLNÍ DESIGN
+     ============================================ -->
+<section id="co-to-je" aria-labelledby="co-to-je-h" style="background: var(--plum-50);">
+  <div class="container">
+    <h2 id="co-to-je-h">Co je univerzální design?</h2>
+
+    <p class="pull-quote">
+      „Návrh produktů, prostředí, programů a služeb tak, aby je mohli v co největší míře
+      používat všichni lidé bez nutnosti úprav nebo specializovaného návrhu.“
+    </p>
+    <p style="text-align: right; font-size: 0.9rem; color: var(--plum-500); margin-top: -1rem;">
+      — Úmluva OSN o právech osob se zdravotním postižením, čl. 2
+    </p>
+
+    <h3>Tři věci, co univerzální design <em>není</em></h3>
+    <ul>
+      <li><strong>Není to jen pro lidi se zdravotním postižením.</strong> Je to pro každého, kdo se zrovna pohybuje na hraně svých možností — což je každý z nás v některé chvíli života.</li>
+      <li><strong>Není to dražší.</strong> Pokud na něj myslíš od začátku, nestojí extra. Pokud ho přidáváš na konci jako záplatu, je drahý vždycky.</li>
+      <li><strong>Není to o snížení kvality pro většinu.</strong> Naopak — řešení navržená pro lidi v krajních situacích bývají pohodlnější pro úplně všechny. (Klasický příklad: titulky u videa.)</li>
+    </ul>
+
+    <h3>Klíčové dokumenty, ze kterých to vychází</h3>
+    <p>
+      Univerzální design není jen heslo. Stojí za ním vyzkoušený a normovaný rámec.
+      Pokud se chceš ponořit hlouběji, tady jsou rigorózní zdroje:
+    </p>
+    <ul>
+      <li>
+        <strong>7 principů univerzálního designu</strong> — Ronald Mace a tým, NC State University, 1997.
+        Pořád platí jako zlatý standard.
+        <a href="https://projects.ncsu.edu/ncsu/design/cud/about_ud/udprinciplestext.htm" target="_blank" rel="noopener">Originál NC State ↗</a>
+      </li>
+      <li>
+        <strong>EN 17161:2019 — Design for All</strong> — evropská norma pro produkty, zboží a služby. Je v jádru Evropského aktu o přístupnosti.
+        <a href="https://accessible-eu-centre.ec.europa.eu/content-corner/digital-library/en-171612019-design-all-accessibility-following-design-all-approach-products-goods-and-services_en" target="_blank" rel="noopener">EU AccessibleEU ↗</a>
+      </li>
+      <li>
+        <strong>UDL — Universal Design for Learning 3.0</strong> — CAST, 2024. Rámec pro vzdělávání založený na neurovědě.
+        <a href="https://udlguidelines.cast.org/" target="_blank" rel="noopener">CAST UDL Guidelines ↗</a>
+      </li>
+      <li>
+        <strong>WCAG 2.2</strong> — pravidla přístupnosti webu, W3C, od 2025 také ISO/IEC 40500:2025.
+        <a href="https://www.w3.org/TR/WCAG22/" target="_blank" rel="noopener">W3C WCAG 2.2 ↗</a>
+      </li>
+      <li>
+        <strong>Metodika UD 2021</strong> — Ministerstvo pro místní rozvoj ČR.
+        <a href="https://mmr.gov.cz/getmedia/8c0575f9-56b0-448d-8c4a-44fa29dfa07b/METODIKA-UD-2021.pdf.aspx?ext=.pdf" target="_blank" rel="noopener">MMR ČR (PDF) ↗</a>
+      </li>
+    </ul>
+
+    <div class="note">
+      <strong>Pro duševní zdraví mladých</strong> je relevantní i rámec WHO „youth-friendly services“ —
+      služba má být <em>dostupná</em> (lokace, cena, čekání), <em>přijatelná</em> (bezpečná, neformální, nestigmatizující, důvěrná)
+      a <em>vhodná</em> (integrovaná, evidence-based, včasná intervence).
+    </div>
+  </div>
+</section>
+
+<!-- ============================================
+     3. 7 PRINCIPŮ
+     ============================================ -->
+<section id="principy" aria-labelledby="principy-h">
+  <div class="container">
+    <h2 id="principy-h">7 principů univerzálního designu</h2>
+    <p>
+      Originál z NC State, 1997. Pod každým principem najdeš:
+      <span class="badge">Co to znamená</span>
+      <span class="badge">Klasický příklad</span>
+      <span class="badge">Duševní zdraví mladých</span>
+    </p>
+    <p style="font-size: 0.95rem; color: var(--plum-500);">Klikni na princip pro rozbalení detailu. Nebo použij šipky a Enter.</p>
+
+    <div class="principles">
+
+      <details class="principle">
+        <summary><span class="principle-number">1</span>Rovnocenné použití <span class="mental-tag">DUŠEVNÍ ZDRAVÍ</span></summary>
+        <div class="principle-body">
+          <p><strong>Design má být použitelný pro lidi s různými schopnostmi — bez segregace a stigma.</strong></p>
+          <p>Stejný vstup pro všechny. Žádné „pro postižené tudy.“ Stejná hodnota, stejný zážitek.</p>
+          <div class="principle-example">
+            <strong>Klasický příklad:</strong> Bezbariérový vstup, který je hlavním vchodem do budovy — ne vedlejší rampa za rohem.
+          </div>
+          <div class="principle-example">
+            <strong>U nás na lince / workshopu:</strong> Stejná forma kontaktu pro úzkostného mladého i pro toho, kdo je v pohodě. Žádné formuláře typu „pokud máte diagnózu, zaškrtněte tady“. Žádný zvláštní kanál pro „těžké případy“. Jedna cesta, která funguje pro různá rozpoložení.
+          </div>
+        </div>
+      </details>
+
+      <details class="principle">
+        <summary><span class="principle-number">2</span>Flexibilita použití <span class="mental-tag">DUŠEVNÍ ZDRAVÍ</span></summary>
+        <div class="principle-body">
+          <p><strong>Design vyhovuje různým preferencím a schopnostem.</strong></p>
+          <p>Více cest k cíli. Možnost přizpůsobit si tempo, formát, intenzitu.</p>
+          <div class="principle-example">
+            <strong>Klasický příklad:</strong> Nůžky pro praváky i leváky. Stavitelná židle. Tlumení světla.
+          </div>
+          <div class="principle-example">
+            <strong>U nás na lince / workshopu:</strong> Mladý si může vybrat — chat, telefon, e-mail, osobně. Workshop má text i obrázky i video. Kdo se nechce ptát nahlas, může psát na lísteček. Anonymita je opce, ne podmínka.
+          </div>
+        </div>
+      </details>
+
+      <details class="principle">
+        <summary><span class="principle-number">3</span>Jednoduché a intuitivní použití <span class="mental-tag">DUŠEVNÍ ZDRAVÍ</span></summary>
+        <div class="principle-body">
+          <p><strong>Použití má být snadno pochopitelné bez ohledu na zkušenost, jazyk nebo aktuální soustředění.</strong></p>
+          <p>Pro nás zásadní: <em>aktuální soustředění</em>. Mladý v úzkostné atace nemá kapacitu louskat složité instrukce.</p>
+          <div class="principle-example">
+            <strong>Klasický příklad:</strong> Piktogramy v letištní hale. Jednoduchý kohoutek s pákovým ovládáním.
+          </div>
+          <div class="principle-example">
+            <strong>U nás na lince / workshopu:</strong> První věta na webu jasně říká „když si nevíš rady, klikni sem“. Žádný žargon. Žádné akronymy bez vysvětlení. Cesta k pomoci má maximálně 3 kroky.
+            <br><br>
+            <em>Test: představ si, že jsi v úzkosti. Najdeš pomoc do 30 sekund?</em>
+          </div>
+        </div>
+      </details>
+
+      <details class="principle">
+        <summary><span class="principle-number">4</span>Vnímatelné informace <span class="mental-tag">DUŠEVNÍ ZDRAVÍ</span></summary>
+        <div class="principle-body">
+          <p><strong>Informace se předává více smysly a způsoby — aby ji člověk nemohl minout.</strong></p>
+          <p>Text, obraz, zvuk, hmat. Kontrast. Velikost. Důležité informace nesmí být schované jako vedlejší poznámka.</p>
+          <div class="principle-example">
+            <strong>Klasický příklad:</strong> Hasicí značka — text, piktogram, červená barva, hmatový reliéf. Titulky u videa.
+          </div>
+          <div class="principle-example">
+            <strong>U nás na lince / workshopu:</strong> Krizový kontakt je <em>velkou</em> kontrastní barvou, ne malým písmem dole na patičce. Plakát má text i piktogram. Video má titulky. Po telefonickém rozhovoru přijde i e-mail se shrnutím a dalšími kroky.
+          </div>
+        </div>
+      </details>
+
+      <details class="principle">
+        <summary><span class="principle-number">5</span>Tolerance k chybám <span class="mental-tag">DUŠEVNÍ ZDRAVÍ</span></summary>
+        <div class="principle-body">
+          <p><strong>Design minimalizuje rizika z nahodilých nebo nezáměrných úkonů.</strong></p>
+          <p>Pro duševní zdraví mimořádně důležité. Lidé v krizi dělají chyby. Designovat musíme tak, aby chyba nebyla katastrofa.</p>
+          <div class="principle-example">
+            <strong>Klasický příklad:</strong> Tlačítko „Zpět“ ve formuláři. „Opravdu chcete smazat?“ potvrzení. Undo v textovém editoru.
+          </div>
+          <div class="principle-example">
+            <strong>U nás na lince / workshopu:</strong> Když mladý položí telefon, dostane SMS s kontaktem na zpětné spojení. Když ve formuláři udělá chybu, neztratí už napsané věty. Když na workshopu řekne něco, čeho lituje, má prostor to vrátit. Nikdo není „vyřazen z fronty“ jen proto, že nevěděl, jak něco napsat.
+          </div>
+        </div>
+      </details>
+
+      <details class="principle">
+        <summary><span class="principle-number">6</span>Nízká fyzická i mentální námaha <span class="mental-tag">DUŠEVNÍ ZDRAVÍ</span></summary>
+        <div class="principle-body">
+          <p><strong>Design jde použít efektivně, pohodlně a s minimální únavou.</strong></p>
+          <p>U duševního zdraví překládáme i jako: <em>nízká aktivační energie potřebná k tomu, aby člověk udělal první krok.</em></p>
+          <div class="principle-example">
+            <strong>Klasický příklad:</strong> Páková klika místo otáčivého knoflíku. Automatické dveře. Klávesa Enter, která potvrdí formulář.
+          </div>
+          <div class="principle-example">
+            <strong>U nás na lince / workshopu:</strong> Žádné registrace „kvůli statistikám“ před prvním kontaktem. Žádné 10 kliků na pomoc. Žádné psychologické dotazníky, než vůbec začneme rozhovor. Nejdřív kontakt, papíry pak.
+          </div>
+        </div>
+      </details>
+
+      <details class="principle">
+        <summary><span class="principle-number">7</span>Vhodný rozměr a prostor pro přístup a použití <span class="mental-tag">DUŠEVNÍ ZDRAVÍ</span></summary>
+        <div class="principle-body">
+          <p><strong>Vhodný prostor pro různé velikosti těla, polohy a způsoby použití.</strong></p>
+          <p>V duševním zdraví: prostor i emocionální. Místnost, kde se mladý necítí jako v ordinaci. Web, kde má dýchací prostor — bílé místo, ne nahuštěné odstavce.</p>
+          <div class="principle-example">
+            <strong>Klasický příklad:</strong> Široké dveře a chodby. Pulty v různých výškách. Místo na vozík v kině.
+          </div>
+          <div class="principle-example">
+            <strong>U nás na lince / workshopu:</strong> Workshopová místnost má kde sedět, kde stát, kde se odpojit. Web má dýchací prostor, vzduch mezi odstavci. Plakát není nahuštěný. Telefonát má pauzy. Nikdo nemusí mluvit, když nechce.
+          </div>
+        </div>
+      </details>
+
+    </div>
+
+    <p style="margin-top: 2rem;">
+      <em>Zdroj principů: Center for Universal Design, NC State University, 1997.</em>
+      <a href="https://projects.ncsu.edu/ncsu/design/cud/about_ud/udprinciplestext.htm" target="_blank" rel="noopener">Originál ↗</a>
+    </p>
+  </div>
+</section>
+
+<!-- ============================================
+     4. SIMULÁTOR — Zažij si to
+     ============================================ -->
+<section id="simulator" aria-labelledby="simulator-h" style="background: var(--plum-50);">
+  <div class="container">
+    <h2 id="simulator-h">Zažij si to — 3 simulátory</h2>
+    <p>
+      Nejlepší způsob, jak pochopit, proč na designu záleží, je <strong>na chvíli to mít.</strong>
+      Tři krátké simulace, které ti dají aha moment.
+    </p>
+    <div class="note">
+      <strong>Důležité:</strong> Simulace je jen přibližná. Skutečná zkušenost lidí
+      s těmito stavy je hlubší a komplexnější. Ale i takhle krátký pohled stačí
+      na to, abychom přestali designovat „pro průměrného uživatele.“
+    </div>
+
+    <div class="sim-tabs" role="tablist" aria-label="Výběr simulátoru">
+      <button class="sim-tab" role="tab" aria-selected="true" aria-controls="sim-anxiety" id="tab-anxiety">Úzkost / přetížení</button>
+      <button class="sim-tab" role="tab" aria-selected="false" aria-controls="sim-dyslexia" id="tab-dyslexia">Dyslexie</button>
+      <button class="sim-tab" role="tab" aria-selected="false" aria-controls="sim-form" id="tab-form">Špatný vs. dobrý formulář</button>
+    </div>
+
+    <!-- Úzkost -->
+    <div id="sim-anxiety" class="sim-panel" role="tabpanel" aria-labelledby="tab-anxiety">
+      <h3>Úzkostná ataka & kognitivní přetížení</h3>
+      <label class="sim-toggle">
+        <input type="checkbox" id="toggle-anxiety" aria-describedby="anxiety-desc">
+        Zapnout simulaci
+      </label>
+      <p id="anxiety-desc" style="font-size: 0.9rem; color: var(--plum-500);">
+        Při zapnutí se text rozmaže a zhorší se kontrast. Tak nějak vidí instrukce někdo, kdo má panický záchvat nebo silnou úzkost.
+      </p>
+      <div class="sim-anxiety-text" id="anxiety-text">
+        <p>
+          Vítej. Než tě spojíme s konzultantem, prosíme tě o vyplnění krátkého dotazníku.
+          Klikni na tlačítko „Pokračovat“ a postupně vyplň všechna pole.
+          Pokud máš účet, přihlas se vlevo nahoře. Pokud nemáš, klikni na „Registrace“.
+          Po registraci ti přijde potvrzovací e-mail.
+        </p>
+        <p>
+          Pro krizový kontakt klikni <a href="#">sem</a>.
+        </p>
+      </div>
+      <div class="sim-explainer">
+        <strong>Co se dá udělat:</strong> Krizový kontakt by neměl být schovaný v běžném textu.
+        Měl by být <em>první věc</em>, kterou člověk v úzkosti vidí — velký, kontrastní, jednoznačný.
+        Princip <strong>Vnímatelné informace</strong> + <strong>Nízká námaha</strong>.
+      </div>
+    </div>
+
+    <!-- Dyslexie -->
+    <div id="sim-dyslexia" class="sim-panel" role="tabpanel" aria-labelledby="tab-dyslexia" hidden>
+      <h3>Čtení s dyslexií</h3>
+      <label class="sim-toggle">
+        <input type="checkbox" id="toggle-dyslexia">
+        Zapnout simulaci
+      </label>
+      <p style="font-size: 0.9rem; color: var(--plum-500);">
+        Při zapnutí se text zobrazí v podobě, která ztěžuje čtení dyslektikovi — hustá řádkování, patkové písmo, malé mezery, šedé pozadí.
+      </p>
+      <div class="sim-dyslexia-text" id="dyslexia-text">
+        <p>
+          Workshop o duševním zdraví proběhne v úterý 14. listopadu od 9:00 do 12:30
+          v učebně 204 na druhém patře hlavní budovy. S sebou si vezmi psací potřeby
+          a něco pohodlného na sebe. Účast je dobrovolná, ale doporučujeme. Po workshopu
+          bude prostor pro individuální konzultace s našimi lektorkami v sousední místnosti.
+        </p>
+      </div>
+      <div class="sim-explainer">
+        <strong>Co se dá udělat:</strong> Sans-serif písmo, větší řádkování, kontrastní pozadí,
+        krátké odstavce, klíčové údaje vypíchnuté (datum, místo, čas).
+        Princip <strong>Jednoduché a intuitivní použití</strong>.
+      </div>
+    </div>
+
+    <!-- Formulář -->
+    <div id="sim-form" class="sim-panel" role="tabpanel" aria-labelledby="tab-form" hidden>
+      <h3>Stejný formulář, dva přístupy</h3>
+      <p>Klikni do polí v obou formulářích. Cítíš ten rozdíl?</p>
+
+      <div class="compare-grid">
+        <div>
+          <span class="compare-label" style="background: #b06060;">Špatně</span>
+          <form class="sim-form-demo bad" onsubmit="return false;">
+            <label for="bad-name">Celé jméno (povinné)</label>
+            <input type="text" id="bad-name" placeholder="Jan Novák">
+            <label for="bad-age">Věk (vyplňte pouze čísla, jinak formulář nebude validní)</label>
+            <input type="text" id="bad-age">
+            <label for="bad-diag">Případná diagnóza (pokud máte)</label>
+            <select id="bad-diag">
+              <option>-- vyberte --</option>
+              <option>Úzkost</option>
+              <option>Deprese</option>
+              <option>ADHD</option>
+            </select>
+          </form>
+        </div>
+        <div>
+          <span class="compare-label" style="background: var(--success);">Lépe</span>
+          <form class="sim-form-demo" onsubmit="return false;">
+            <label for="good-name">Jak ti můžeme říkat?</label>
+            <input type="text" id="good-name" placeholder="Stačí přezdívka">
+            <label for="good-contact">Jak tě nejlépe kontaktovat?</label>
+            <select id="good-contact">
+              <option>Telefon</option>
+              <option>Chat</option>
+              <option>E-mail</option>
+              <option>Osobně</option>
+            </select>
+            <p style="font-size: 0.85rem; color: var(--plum-500); margin-top: -0.5rem;">
+              Diagnózu řešit nemusíš. Stačí ti vědět, že chceš pomoc.
+            </p>
+          </form>
+        </div>
+      </div>
+      <div class="sim-explainer">
+        <strong>Co se změnilo:</strong> Větší písmo, přátelská formulace, méně povinného,
+        důvěrné oslovení, žádné diagnostické nálepky před prvním kontaktem.
+        Principy <strong>Rovnocenné použití</strong> + <strong>Nízká námaha</strong> + <strong>Tolerance k chybám</strong>.
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============================================
+     5. PŘED / PO
+     ============================================ -->
+<section id="predpo" aria-labelledby="predpo-h">
+  <div class="container">
+    <h2 id="predpo-h">Před / Po — jak to mění reálnou službu</h2>
+    <p>Čtyři situace, které možná znáš. Vyber tu, která tě zajímá:</p>
+
+    <div class="compare-tabs" role="tablist" aria-label="Výběr scénáře">
+      <button class="compare-tab" role="tab" aria-selected="true" aria-controls="comp-web" id="ct-web">Webová pomoc</button>
+      <button class="compare-tab" role="tab" aria-selected="false" aria-controls="comp-letak" id="ct-letak">Leták na škole</button>
+      <button class="compare-tab" role="tab" aria-selected="false" aria-controls="comp-workshop" id="ct-workshop">Workshop ve třídě</button>
+      <button class="compare-tab" role="tab" aria-selected="false" aria-controls="comp-recepce" id="ct-recepce">První kontakt</button>
+    </div>
+
+    <!-- Web -->
+    <div id="comp-web" role="tabpanel" aria-labelledby="ct-web">
+      <div class="compare-grid">
+        <div class="compare-card compare-before">
+          <span class="compare-label">Před</span>
+          <h3>Web s pomocí pro mladé</h3>
+          <div class="compare-example">
+            <p>Na hlavní stránce 6 sekcí, krizové číslo schované v patičce malým písmem. Aby se mladý dostal k chatu, musí: 1) klik na „Pomoc“, 2) klik na „Online poradna“, 3) klik „Nový dotaz“, 4) vyplnit jméno + e-mail + věk + obec, 5) souhlas s GDPR (3 odstavce drobným).</p>
+          </div>
+          <p><strong>Výsledek:</strong> Anežka odchází na třetím kliku.</p>
+        </div>
+        <div class="compare-card compare-after">
+          <span class="compare-label">Po</span>
+          <h3>Web s pomocí pro mladé</h3>
+          <div class="compare-example">
+            <p>První obrazovka má jeden velký kontrastní blok: „Potřebuješ teď mluvit s někým? Napiš nám.“ Pod ním tlačítko chat / volat / napsat. Žádná registrace předem. Identita až tehdy, když to dává smysl. Krizová linka v hlavičce po celém webu, ne v patičce.</p>
+          </div>
+          <p><strong>Výsledek:</strong> Anežka klikne během 5 sekund.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Leták -->
+    <div id="comp-letak" role="tabpanel" aria-labelledby="ct-letak" hidden>
+      <div class="compare-grid">
+        <div class="compare-card compare-before">
+          <span class="compare-label">Před</span>
+          <h3>Leták ve školní chodbě</h3>
+          <div class="compare-example">
+            <p>Hustý text patkovým písmem, 5 odstavců, klíčové informace (kdy, kde, jak se ozvat) rozpuštěné mezi obecnostmi. QR kód je v rohu malý a bez popisku. Foto autorů workshopu zabere 70 % plochy.</p>
+          </div>
+          <p><strong>Výsledek:</strong> Matěj se zastaví, podívá 3 sekundy, jde dál. Nepamatuje si nic.</p>
+        </div>
+        <div class="compare-card compare-after">
+          <span class="compare-label">Po</span>
+          <h3>Leták ve školní chodbě</h3>
+          <div class="compare-example">
+            <p>Hlavní sdělení tučně velkým písmem: „Workshop o úzkosti pro studenty. 14. 11., 9:00, učebna 204.“ Tři krátké odrážky (co se naučíš). Velký QR vlevo dole + popis. Sans-serif. Hodně bílého místa. Kontrast piktogramů a textu jasný.</p>
+          </div>
+          <p><strong>Výsledek:</strong> Matěj si během 5 sekund zapamatuje datum i místo.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Workshop -->
+    <div id="comp-workshop" role="tabpanel" aria-labelledby="ct-workshop" hidden>
+      <div class="compare-grid">
+        <div class="compare-card compare-before">
+          <span class="compare-label">Před</span>
+          <h3>Workshop o duševním zdraví</h3>
+          <div class="compare-example">
+            <p>Lektorka mluví 45 minut do prezentace. Otázky jen ústně. Materiál jen tištěný, malé písmo. Kdo nestihne sledovat, nemá kam se vrátit. Citlivá témata bez dohodnutého „stop slova“. Žádný kontakt na pomoc po workshopu.</p>
+          </div>
+          <p><strong>Výsledek:</strong> Tomáš se ztratí, stydí zeptat, odchází bez informací.</p>
+        </div>
+        <div class="compare-card compare-after">
+          <span class="compare-label">Po</span>
+          <h3>Workshop o duševním zdraví</h3>
+          <div class="compare-example">
+            <p>Mix mluvení, krátkých aktivit a vizuálů. Otázky možné nahlas i písemně (lísteček, anonymní formulář). Materiály v tištěné i digitální podobě, sans-serif. Dohodnuté „stop slovo“. Na konci karta s kontaktem na pomoc — vezmou si všichni, ne jen ti, co se přihlásí.</p>
+          </div>
+          <p><strong>Výsledek:</strong> Tomáš odchází s kartičkou v batohu. Za 3 měsíce ji použije.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recepce -->
+    <div id="comp-recepce" role="tabpanel" aria-labelledby="ct-recepce" hidden>
+      <div class="compare-grid">
+        <div class="compare-card compare-before">
+          <span class="compare-label">Před</span>
+          <h3>První kontakt na lince</h3>
+          <div class="compare-example">
+            <p>„Dobrý den, abychom vás mohli zařadit, potřebuji vaše jméno, rok narození, město a stručně popis problému. Nahráváme.“ Volající má pocit úředního pohovoru. Žádná zpětná vazba „slyším tě“. Pokud zavěsí, není už cesta zpět.</p>
+          </div>
+          <p><strong>Výsledek:</strong> Volající v úzkosti zavěsí během 30 sekund.</p>
+        </div>
+        <div class="compare-card compare-after">
+          <span class="compare-label">Po</span>
+          <h3>První kontakt na lince</h3>
+          <div class="compare-example">
+            <p>„Ahoj, tady [jméno]. Jsem ráda, že jsi zavolala. Není kam spěchat. Můžeme si chvíli povídat — a jestli budeš chtít, řekneš mi víc.“ Údaje až poté, co je vztah. Pokud zavěsí, dostane SMS: „Můžeš zavolat kdykoliv znovu — bez registrace.“</p>
+          </div>
+          <p><strong>Výsledek:</strong> Volající zůstane na lince. Případně se vrátí.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============================================
+     6. KVÍZ
+     ============================================ -->
+<section id="kviz" aria-labelledby="kviz-h" style="background: var(--plum-50);">
+  <div class="container">
+    <h2 id="kviz-h">Mini-kvíz: Je to univerzální design?</h2>
+    <p>5 otázek z reálného života. Vyber jednu odpověď. Hned uvidíš, jestli to klaplo.</p>
+
+    <div class="quiz-card">
+      <p class="quiz-progress" id="quiz-progress">Otázka 1 z 5</p>
+      <div id="quiz-content"></div>
+    </div>
+
+    <div id="quiz-result" hidden></div>
+  </div>
+</section>
+
+<!-- ============================================
+     7. AKČNÍ KROKY
+     ============================================ -->
+<section id="akce" aria-labelledby="akce-h">
+  <div class="container">
+    <h2 id="akce-h">Co s tím v Nevypusť duši — 5 kroků pro tým</h2>
+    <p>
+      Univerzální design není projekt na rok. Je to návyk. Tady je pět věcí, které
+      můžeme zkusit už zítra — bez rozpočtu, bez konzultantů, bez čekání na velkou změnu.
+    </p>
+
+    <ol class="action-list">
+      <li>
+        <h3>Audit jedné stránky webu / jednoho letáku</h3>
+        <p>
+          Vyber jeden důležitý kontaktní bod (homepage, kontaktní stránka, leták na workshop). Projdi ho ze tří úhlů:
+          <em>Najde to Anežka v úzkosti? Najde to Matěj s ADHD? Přečte to Tomáš?</em>
+          Sepiš 3 věci, které jdou opravit za hodinu. Oprav je.
+        </p>
+      </li>
+      <li>
+        <h3>Personas na zeď</h3>
+        <p>
+          Vytiskni si Anežku, Matěje a Tomáše (nebo tři vlastní). Pověs si je do týmovny.
+          Když budeš dělat jakékoliv rozhodnutí o komunikaci nebo službě, zeptej se nahlas:
+          „Sedí to <strong>jim všem</strong>?“
+        </p>
+      </li>
+      <li>
+        <h3>Checklist před spuštěním</h3>
+        <p>
+          Než pustíš nový plakát / formulář / workshop, projdi 5 otázek:
+          (1) Je krizový kontakt viditelný? (2) Jdou klíčové info najít za 5 sekund?
+          (3) Funguje to bez registrace? (4) Funguje to bez znalosti odborných termínů?
+          (5) Co se stane, když uživatel udělá chybu? Pokud na jednu otázku odpovíš „nevím“, ještě to nepouštěj.
+        </p>
+      </li>
+      <li>
+        <h3>Spoluvytváření s cílovkou</h3>
+        <p>
+          Nejlepší zdroj inspirace nejsme my — jsou to mladí lidé. Před spuštěním služby
+          udělej rychlou zpětnou vazbu s 3-5 lidmi z cílovky. Ne dotazník — rozhovor.
+          „Co bys udělal, kdybys to viděl poprvé?“ Co se naučíš za 30 minut, ušetří týdny.
+        </p>
+      </li>
+      <li>
+        <h3>Sdílená knihovna „před / po“</h3>
+        <p>
+          Pokaždé, když uděláte UD vylepšení, uložte si screenshot „před“ a „po“ do sdílené složky.
+          Po půl roce máte vlastní case study + materiál pro školení nových kolegyň.
+          Zároveň je to skvělé pro grantové žádosti — ukazuje to konkrétní dopad.
+        </p>
+      </li>
+    </ol>
+
+    <div class="note">
+      <strong>Tip pro tebe, Petro:</strong> Vzhledem k tomu, že stavíš „second brain“ pro tým —
+      UD checklist je perfektní kandidát na první šablonu. Stručná, opakovatelná, jednoduše předatelná.
+    </div>
+  </div>
+</section>
+
+<!-- ============================================
+     8. ZDROJE
+     ============================================ -->
+<section id="zdroje" aria-labelledby="zdroje-h" style="background: var(--plum-50);">
+  <div class="container">
+    <h2 id="zdroje-h">Zdroje, normy, hloubkové čtení</h2>
+
+    <div class="sources">
+      <h3>Originální principy a normy</h3>
+      <ul>
+        <li><a href="https://projects.ncsu.edu/ncsu/design/cud/about_ud/udprinciplestext.htm" target="_blank" rel="noopener">7 principů univerzálního designu — NC State University, 1997</a> (originál)</li>
+        <li><a href="https://design.ncsu.edu/research/center-for-universal-design/" target="_blank" rel="noopener">Center for Universal Design, NC State</a></li>
+        <li><a href="https://www.udinstitute.org/principles" target="_blank" rel="noopener">RL Mace Universal Design Institute</a></li>
+        <li><a href="https://accessible-eu-centre.ec.europa.eu/content-corner/digital-library/en-171612019-design-all-accessibility-following-design-all-approach-products-goods-and-services_en" target="_blank" rel="noopener">EN 17161:2019 — Design for All (Evropská komise / AccessibleEU)</a></li>
+        <li><a href="https://universaldesign.ie/about-universal-design/products-and-services/standard-i-s-en-171612019-design-for-all" target="_blank" rel="noopener">EN 17161:2019 — výklad od Centre for Excellence in UD (Irsko)</a></li>
+      </ul>
+
+      <h3>Vzdělávání — UDL framework</h3>
+      <ul>
+        <li><a href="https://udlguidelines.cast.org/" target="_blank" rel="noopener">CAST UDL Guidelines 3.0 (2024)</a> — tři principy: Engagement, Representation, Action &amp; Expression</li>
+        <li><a href="https://www.cast.org/what-we-do/universal-design-for-learning/" target="_blank" rel="noopener">CAST — Universal Design for Learning</a></li>
+      </ul>
+
+      <h3>Digitální přístupnost</h3>
+      <ul>
+        <li><a href="https://www.w3.org/TR/WCAG22/" target="_blank" rel="noopener">WCAG 2.2 — W3C Recommendation (od 2025 také ISO/IEC 40500:2025)</a></li>
+        <li><a href="https://www.w3.org/WAI/standards-guidelines/wcag/new-in-22/" target="_blank" rel="noopener">Co je nového v WCAG 2.2 — W3C WAI</a></li>
+      </ul>
+
+      <h3>Česká legislativa a metodiky</h3>
+      <ul>
+        <li><a href="https://mmr.gov.cz/getmedia/8c0575f9-56b0-448d-8c4a-44fa29dfa07b/METODIKA-UD-2021.pdf.aspx?ext=.pdf" target="_blank" rel="noopener">Metodika uplatňování principů univerzálního designu — MMR ČR, 2021 (PDF)</a></li>
+        <li><a href="https://www.designprovsechny.cz/en" target="_blank" rel="noopener">Design pro všechny — český web o Evropském aktu o přístupnosti</a></li>
+        <li><a href="https://www.univerzalniatelier.cz/l/historie-univerzalniho-designu/" target="_blank" rel="noopener">Univerzální atelier — historie a definice UD česky</a></li>
+      </ul>
+
+      <h3>Design služeb pro mladé s duševním onemocněním</h3>
+      <ul>
+        <li><a href="https://onlinelibrary.wiley.com/doi/10.1002/wps.20938" target="_blank" rel="noopener">McGorry P. et al. (2022): Designing and scaling up integrated youth mental health care, World Psychiatry</a></li>
+        <li><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC8507894/" target="_blank" rel="noopener">Conducting Collaborative Mental Health Service Design with Young People (NZ)</a></li>
+        <li><a href="https://www.vhba.vic.gov.au/designing-mental-health" target="_blank" rel="noopener">Designing for young people experiencing mental ill health — VHBA</a></li>
+        <li><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10809440/" target="_blank" rel="noopener">A collaboratively produced model of service design for children &amp; young people</a></li>
+      </ul>
+
+      <h3>Plain language a kognitivní přístupnost</h3>
+      <ul>
+        <li><a href="https://www.cdc.gov/health-literacy/php/develop-materials/plain-language.html" target="_blank" rel="noopener">CDC — Plain Language Materials &amp; Resources</a></li>
+        <li><a href="https://centerondisability.org/plain-language-and-easy-read/" target="_blank" rel="noopener">Center on Disability — Plain Language and Easy Read</a></li>
+      </ul>
+
+      <h3>Pro tým Nevypusť duši — kontext</h3>
+      <ul>
+        <li><a href="https://nevypustdusi.cz/" target="_blank" rel="noopener">Nevypusť duši — homepage</a></li>
+        <li><a href="https://nevypustdusi.cz/programy/" target="_blank" rel="noopener">Programy organizace</a></li>
+        <li><a href="https://nevypustdusi.cz/2025/01/20/jak-nas-novy-inovacni-projekt-promeni-svet-detskeho-dusevniho-zdravi/" target="_blank" rel="noopener">Inovační projekt dětského duševního zdraví 2024-2027</a></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="container">
+    <h3>O tomto průvodci</h3>
+    <p>
+      Klikací průvodce <strong>univerzálním designem</strong> pro tým <strong>Nevypusť duši</strong>.
+      Připravila Petra Kutálková, designérka sociálních inovací.
+    </p>
+    <p style="font-size: 0.9rem;">
+      Stránka je sama navržena podle principů UD: sémantické HTML, klávesnicová navigace
+      (Tab, Shift+Tab, Enter), skip link, kontrast podle WCAG 2.2 AA, respekt k <code>prefers-reduced-motion</code>,
+      přístupné formuláře, alternativní texty, jeden viditelný focus pro každý prvek.
+    </p>
+    <p style="font-size: 0.9rem;">
+      Otestuj si to: stiskni Tab a projdi celý web jen klávesnicí. Zkus zoom 200 %. Vypni si v systému animace.
+    </p>
+  </div>
+</footer>
+
+<script>
+/* ============================================
+   Simulátory — tab switching
+   ============================================ */
+(function() {
+  const simTabs = document.querySelectorAll('.sim-tab');
+  const simPanels = ['sim-anxiety', 'sim-dyslexia', 'sim-form'];
+
+  simTabs.forEach((tab, idx) => {
+    tab.addEventListener('click', () => {
+      simTabs.forEach(t => t.setAttribute('aria-selected', 'false'));
+      tab.setAttribute('aria-selected', 'true');
+      simPanels.forEach((id, i) => {
+        document.getElementById(id).hidden = (i !== idx);
+      });
+    });
+    // klávesnice — šipky
+    tab.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+        const dir = e.key === 'ArrowRight' ? 1 : -1;
+        const next = (idx + dir + simTabs.length) % simTabs.length;
+        simTabs[next].focus();
+        simTabs[next].click();
+      }
+    });
+  });
+
+  // Toggly pro úzkost a dyslexii
+  const anxietyToggle = document.getElementById('toggle-anxiety');
+  const anxietyText = document.getElementById('anxiety-text');
+  if (anxietyToggle) {
+    anxietyToggle.addEventListener('change', () => {
+      anxietyText.classList.toggle('active', anxietyToggle.checked);
+    });
+  }
+
+  const dyslexiaToggle = document.getElementById('toggle-dyslexia');
+  const dyslexiaText = document.getElementById('dyslexia-text');
+  if (dyslexiaToggle) {
+    dyslexiaToggle.addEventListener('change', () => {
+      dyslexiaText.classList.toggle('active', dyslexiaToggle.checked);
+    });
+  }
+})();
+
+/* ============================================
+   Před/Po — tab switching
+   ============================================ */
+(function() {
+  const compareTabs = document.querySelectorAll('.compare-tab');
+  const comparePanels = ['comp-web', 'comp-letak', 'comp-workshop', 'comp-recepce'];
+
+  compareTabs.forEach((tab, idx) => {
+    tab.addEventListener('click', () => {
+      compareTabs.forEach(t => t.setAttribute('aria-selected', 'false'));
+      tab.setAttribute('aria-selected', 'true');
+      comparePanels.forEach((id, i) => {
+        document.getElementById(id).hidden = (i !== idx);
+      });
+    });
+    tab.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+        const dir = e.key === 'ArrowRight' ? 1 : -1;
+        const next = (idx + dir + compareTabs.length) % compareTabs.length;
+        compareTabs[next].focus();
+        compareTabs[next].click();
+      }
+    });
+  });
+})();
+
+/* ============================================
+   Kvíz
+   ============================================ */
+(function() {
+  const questions = [
+    {
+      q: "Webová stránka pro mladé má krizový kontakt schovaný v patičce malým písmem. Kterému principu UD to nejvíc odporuje?",
+      options: [
+        { text: "Princip 4 — Vnímatelné informace", correct: true, fb: "Přesně! Životně důležitá informace musí být vidět hned — velká, kontrastní, opakovaná v různých formátech." },
+        { text: "Princip 7 — Vhodný prostor", correct: false, fb: "Tenhle princip se týká spíš fyzického prostoru a velikostí. Tady jde o to, že informace není vnímatelná." },
+        { text: "Princip 2 — Flexibilita", correct: false, fb: "Flexibilita je o možnosti vybrat si způsob použití. Tady je hlavní problém, že důležitá info není vidět — princip 4." }
+      ]
+    },
+    {
+      q: "Formulář pro registraci na workshop vyžaduje 12 polí včetně diagnózy. Co je s tím v UD perspektivě nejhorší?",
+      options: [
+        { text: "Vysoká námaha + bariéra na vstupu pro někoho v krizi", correct: true, fb: "Ano. Princip 6 (nízká námaha) i princip 1 (rovnocenné použití — žádné diagnostické sítka). Bariéra je už v aktivační energii." },
+        { text: "Není problém — chceme dobře sbírat data", correct: false, fb: "Data sbírat můžeme, ale ne před prvním kontaktem. Pokud člověka odradíme registrací, žádná data nezískáme." },
+        { text: "Stačí udělat formulář kratší", correct: false, fb: "Krátký formulář je dobrý, ale ještě lepší je se ptát, jestli formulář vůbec patří na první kontakt. UD řeší celou cestu, ne jen detail." }
+      ]
+    },
+    {
+      q: "Workshop o úzkosti — lektorka 45 minut mluví, otázky jen ústně, materiály jen tištěné. Co bys udělala v duchu UDL?",
+      options: [
+        { text: "Mix mluvení, vizuálů, krátkých aktivit; otázky možné psát i nahlas; materiály i digitálně", correct: true, fb: "Přesně tak. UDL = více cest k zapojení, různé reprezentace obsahu, různé způsoby projevu. Princip „flexibilita použití“ a „rovnocenné použití“." },
+        { text: "Zkrátit workshop na 30 minut", correct: false, fb: "Délka není hlavní problém. Problém je, že workshop má jen jeden formát zapojení. Krátký monolog je stejně neuniverzální jako dlouhý." },
+        { text: "Dát na konci dotazník zpětné vazby", correct: false, fb: "Zpětná vazba je fajn, ale neřeší problém během workshopu. UDL chce zapojit všechny už během učení." }
+      ]
+    },
+    {
+      q: "Mladý člověk v krizi zavěsí telefon. Co je UD-friendly následný krok?",
+      options: [
+        { text: "Automatická SMS: „Můžeš zavolat kdykoliv znovu — bez registrace.“", correct: true, fb: "Ano. Tolerance k chybám (princip 5) + vnímatelná informace (princip 4). Volající ví, že cesta zpět existuje a je snadná." },
+        { text: "Ozvat se mu zpátky a zeptat se, proč zavěsil", correct: false, fb: "Pokud k tomu nemáme jeho explicitní souhlas, je to invazivní a může to spustit další úzkost. UD respektuje autonomii." },
+        { text: "Nic — když chce, zavolá znovu", correct: false, fb: "Tohle nechává všechnu aktivační energii na člověku v krizi. Princip 6 (nízká námaha) říká, že snadnost má být na naší straně." }
+      ]
+    },
+    {
+      q: "Tým plánuje novou službu pro dospívající s úzkostí. Kdy je nejlepší zapojit cílovku?",
+      options: [
+        { text: "Od první chvíle, kdy se služba navrhuje", correct: true, fb: "Ano. Princip „nic o nás bez nás“ je v jádru UD i WHO youth-friendly services. Co se nedá designovat společně s uživateli, není pro ně." },
+        { text: "Až když je služba hotová, na testování", correct: false, fb: "Tehdy už je pozdě měnit zásadní věci. Zpětná vazba na konci se promění v drobné úpravy, ne v skutečně lepší službu." },
+        { text: "Nezapojovat — odborníci to ví nejlíp", correct: false, fb: "I nejlepší odborník nezná zkušenost zevnitř. UD i evidence-based design říkají: ti, kdo službu používají, musí být u jejího vzniku." }
+      ]
+    }
+  ];
+
+  let current = 0;
+  const content = document.getElementById('quiz-content');
+  const progress = document.getElementById('quiz-progress');
+  const resultBox = document.getElementById('quiz-result');
+  let correctCount = 0;
+
+  function renderQuestion() {
+    if (current >= questions.length) {
+      progress.style.display = 'none';
+      content.innerHTML = '';
+      resultBox.hidden = false;
+      let msg;
+      if (correctCount === 5) msg = "Skvěle! UD máš v krvi. Teď to jen zaveď do týmu.";
+      else if (correctCount >= 3) msg = "Solidní! Principy ti dávají smysl. Pojď to teď zkusit na něčem reálném.";
+      else msg = "Žádný stres — od toho je tu tenhle průvodce. Vrať se k principům 4, 5 a 6 — pro nás jsou nejdůležitější.";
+
+      resultBox.innerHTML = `
+        <div class="quiz-result">
+          <h3>${correctCount} / 5 správně</h3>
+          <p>${msg}</p>
+          <p>
+            <button class="hero-cta" style="background: var(--plum-700); border: none; cursor: pointer; font-size: 1rem;" onclick="location.reload()">Vyzkoušet znovu</button>
+          </p>
+        </div>
+      `;
+      return;
+    }
+    const item = questions[current];
+    progress.textContent = `Otázka ${current + 1} z ${questions.length}`;
+    let html = `<p class="quiz-question">${item.q}</p><div class="quiz-options" role="group">`;
+    item.options.forEach((opt, idx) => {
+      html += `<button class="quiz-btn" data-idx="${idx}">${opt.text}</button>`;
+    });
+    html += `</div><div class="quiz-feedback" id="quiz-fb" hidden></div>`;
+    content.innerHTML = html;
+
+    const buttons = content.querySelectorAll('.quiz-btn');
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.dataset.idx);
+        const chosen = item.options[idx];
+        buttons.forEach((b, i) => {
+          b.disabled = true;
+          if (item.options[i].correct) b.classList.add('correct');
+          if (i === idx && !chosen.correct) b.classList.add('incorrect');
+        });
+        if (chosen.correct) correctCount++;
+        const fb = document.getElementById('quiz-fb');
+        fb.hidden = false;
+        fb.innerHTML = `<strong>${chosen.correct ? 'Správně!' : 'Ne úplně.'}</strong> ${chosen.fb}
+          <p style="margin-top: 1rem;"><button class="hero-cta" style="background: var(--plum-700); border: none; cursor: pointer; font-size: 0.95rem; padding: 0.6rem 1.2rem;" id="next-btn">Další otázka →</button></p>`;
+        document.getElementById('next-btn').addEventListener('click', () => {
+          current++;
+          renderQuestion();
+        });
+      });
+    });
+  }
+
+  renderQuestion();
+})();
+</script>
+
+</body>
+</html>
